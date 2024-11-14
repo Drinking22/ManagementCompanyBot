@@ -2,6 +2,7 @@ package com.example.ManagementCompanyBot.service;
 
 import com.example.ManagementCompanyBot.config.properties.BotProperties;
 import com.example.ManagementCompanyBot.handlers.*;
+import com.example.ManagementCompanyBot.utils.BotMessages;
 import com.example.ManagementCompanyBot.utils.UpdateChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +101,6 @@ public class BotCompany extends TelegramLongPollingBot {
         long chatId = update.getMessage().getChatId();
         log.warn("Ignoring edited message from chatId: {}", chatId);
         return new SendMessage(String.valueOf(chatId),
-                "Редактирование сообщений запрещено. Пожалуйста, отправьте новое сообщение.");
+                BotMessages.EDIT_MESSAGE_ERROR.getMessage());
     }
 }

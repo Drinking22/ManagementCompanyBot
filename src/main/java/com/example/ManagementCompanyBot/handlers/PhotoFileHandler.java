@@ -1,6 +1,7 @@
 package com.example.ManagementCompanyBot.handlers;
 
 import com.example.ManagementCompanyBot.service.bot.BotServiceImpl;
+import com.example.ManagementCompanyBot.utils.BotMessages;
 import com.example.ManagementCompanyBot.utils.CreateKeyboardClass;
 import com.example.ManagementCompanyBot.utils.states.UserStateManager;
 import com.example.ManagementCompanyBot.utils.workWithFiles.DownloadAndWriteFiles;
@@ -41,13 +42,13 @@ public class PhotoFileHandler implements FileHandlerInterface {
             botService.sendEmailWithAttachment(outputStream, fileName);
             stateManager.removeUserState(chatId);
             SendMessage responseMessage = new SendMessage(String.valueOf(chatId),
-                    "Фотография отправлена на электронную почту!\n\nВыберите услугу:\n");
+                    BotMessages.PHOTO_SEND_ON_EMAIL.getMessage());
             responseMessage.setReplyMarkup(createKeyboardClass.createKeyboard());
             return responseMessage;
 
         } catch (Exception ex) {
             log.error("Error while processing photo: {}", ex.getMessage());
-            return new SendMessage(String.valueOf(chatId), "Произошла ошибка при обработке фотографии.");
+            return new SendMessage(String.valueOf(chatId), BotMessages.PROCESSING_FILE_ERROR.getMessage());
         }
     }
 }

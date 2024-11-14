@@ -1,5 +1,6 @@
 package com.example.ManagementCompanyBot.handlers;
 
+import com.example.ManagementCompanyBot.utils.BotMessages;
 import com.example.ManagementCompanyBot.utils.states.BotStates;
 import com.example.ManagementCompanyBot.utils.states.UserStateManager;
 import lombok.RequiredArgsConstructor;
@@ -23,22 +24,22 @@ public class CallbackQueryHandler {
         switch (command) {
             case "submit_news":
                 return handleCommand(chatId, currentState, BotStates.WAITING_FOR_NEWS,
-                        "Введите текст сообщения:");
+                        BotMessages.SUBMIT_NEWS.getMessage());
 
             case "submit_readings":
                 return handleCommand(chatId, currentState, BotStates.WAITING_FOR_READINGS,
-                        "Введите адрес и показания:\nНапоминаем, что показания принимаются с 15 по 20 число!");
+                        BotMessages.SUBMIT_READINGS.getMessage());
 
             case "submit_photo":
                 return handleCommand(chatId, currentState, BotStates.WAITING_FOR_PHOTO,
-                        "Отправьте фотографию");
+                        BotMessages.SUBMIT_PHOTO.getMessage());
 
             case "submit_video":
                 return handleCommand(chatId, currentState, BotStates.WAITING_FOR_VIDEO,
-                        "Отправьте видеофайл");
+                        BotMessages.SUBMIT_VIDEO.getMessage());
         }
         log.warn("Unknown command from callback query: {}", command);
-        return new SendMessage(String.valueOf(chatId), "Неизвестная команда из запроса обратного вызова");
+        return new SendMessage(String.valueOf(chatId), BotMessages.UNKNOWN_COMMAND.getMessage());
     }
 
     private SendMessage handleCommand(long chatId, BotStates currentState, BotStates waitingState, String message) {
@@ -48,8 +49,7 @@ public class CallbackQueryHandler {
             return new SendMessage(String.valueOf(chatId), message);
         } else {
             log.warn("User  is currently busy with another operation.");
-            return new SendMessage(String.valueOf(chatId),
-                    "Пожалуйста, завершите текущую операцию перед началом новой.");
+            return new SendMessage(String.valueOf(chatId), BotMessages.CURRENT_OPERATION_ERROR.getMessage());
         }
     }
 }

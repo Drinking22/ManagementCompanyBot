@@ -1,6 +1,7 @@
 package com.example.ManagementCompanyBot.handlers;
 
 import com.example.ManagementCompanyBot.service.bot.BotServiceImpl;
+import com.example.ManagementCompanyBot.utils.BotMessages;
 import com.example.ManagementCompanyBot.utils.CreateKeyboardClass;
 import com.example.ManagementCompanyBot.utils.states.BotStates;
 import com.example.ManagementCompanyBot.utils.states.UserStateManager;
@@ -28,6 +29,10 @@ public class TextMessageHandler {
 
         BotStates currentState = stateManager.getUserState(chatId);
 
+        if (text.equals("/cansel")) {
+            return handleCancel(chatId);
+        }
+
         if (currentState == BotStates.WAITING_FOR_NEWS) {
             return processNewsInput(chatId, text);
         } else if (currentState == BotStates.WAITING_FOR_READINGS) {
@@ -37,21 +42,34 @@ public class TextMessageHandler {
         }
     }
 
+    public SendMessage handleCancel(long chatId) {
+        log.info("Client cancels action");
+        stateManager.setUserState(chatId, BotStates.IDLE);
+        SendMessage responseCancelMessage = new SendMessage(String.valueOf(chatId),
+                BotMessages.CANSEL_ACTION.getMessage());
+        responseCancelMessage.setReplyMarkup(createKeyboardClass.createKeyboard());
+        return responseCancelMessage;
+    }
+
     public SendMessage processCommand(long chatId, String text, String userName) {
         switch (text) {
             case "/start":
                 log.info("Client push start");
-                return new SendMessage(String.valueOf(chatId), "Здравствуйте " + userName + "!" + "\n\n" +
-                        "Добро пожаловать в наш телеграм бот!\n\nВыберете услугу:\n");
+                return handleCommand(chatId, BotMessages.START_MESSAGE.getFormattedMessage(userName));
 
             case "/admin"://возможна работа админа
                 log.info("Admin worked");
-                return new SendMessage(String.valueOf(chatId), "Выберете услугу:\n");
+                return new SendMessage(String.valueOf(chatId), BotMessages.ADMIN_ACTION.getMessage());
+
+            case "/cansel":
+                log.info("Client cansel action");
+                stateManager.setUserState(chatId, BotStates.IDLE);
+                return handleCommand(chatId, BotMessages.CANSEL_ACTION.getMessage());
 
             default:
                 log.info("Client wrong action");
                 return new SendMessage(String.valueOf(chatId),
-                        "Неизвестная команда. Пожалуйста, попробуйте снова.");
+                        BotMessages.UNKNOWN_COMMAND.getMessage());
 
         }
     }
@@ -64,11 +82,7 @@ public class TextMessageHandler {
         log.info("Receiving readings from the client");
         botService.processingReadings(chatId, text);
         stateManager.removeUserState(chatId);
-
-        SendMessage responseMessage =
-                new SendMessage(String.valueOf(chatId), "Показания переданы!\n\nВыберете услугу:\n");
-        responseMessage.setReplyMarkup(createKeyboardClass.createKeyboard());
-        return responseMessage;
+        return handleCommand(chatId, BotMessages.READINGS_RECEIVED.getMessage());
     }
 
     public SendMessage processNewsInput(long chatId, String text) {
@@ -79,9 +93,11 @@ public class TextMessageHandler {
         log.info("Receiving news from the client");
         botService.processingNews(chatId, text);
         stateManager.removeUserState(chatId);
+        return handleCommand(chatId, BotMessages.NEWS_RECEIVED.getMessage());
+    }
 
-        SendMessage responseMessage =
-                new SendMessage(String.valueOf(chatId), "Сообщение отправлено!\n\nВыберете услугу:\n");
+    public SendMessage handleCommand(long chatId, String message) {
+        SendMessage responseMessage = new SendMessage(String.valueOf(chatId), message);
         responseMessage.setReplyMarkup(createKeyboardClass.createKeyboard());
         return responseMessage;
     }
@@ -93,6 +109,6 @@ public class TextMessageHandler {
     private static SendMessage sendMessageWhenTextIsShort(long chatId) {
         log.warn("Received empty readings input from the client");
         return new SendMessage(String.valueOf(chatId),
-                "Текст вашего сообщения слишком короткий. Убедитесь в правильности ввода данных");
+                BotMessages.SHORT_TEXT_ERROR.getMessage());
     }
 }
